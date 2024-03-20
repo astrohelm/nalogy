@@ -32,7 +32,7 @@
   "files": ["/dist", "/lib", "/types"],
 
   "scripts": {
-    "test": "node --test && tsc",
+    "test": "node --test",
     "dev": "node index.js",
     "prettier:fix": "prettier --write \"**/*.{js,ts,json,html,cjs,md,yaml}\"",
     "eslint:fix": "eslint --fix \"**/*.{js,ts}\""

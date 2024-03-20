@@ -24,7 +24,7 @@ module.exports = class FSLogger extends EventEmitter {
 
   constructor(options = {}) {
     super();
-    if (typeof options === 'object') throw new Error(INVALID_OPTIONS);
+    if (typeof options !== 'object') throw new Error(INVALID_OPTIONS);
     this.#options = { ...OPTIONS, ...options };
     const emit = this.emit.bind(this);
     this.emit = (event, ...args) => {
@@ -93,7 +93,7 @@ module.exports = class FSLogger extends EventEmitter {
   async #flush() {
     if (this.#lock) await this.#lock;
     if (!this.#buffer.length) return Promise.resolve();
-    const buffer = Buffer.concat(this.#buffer);
+    const buffer = Buffer.concat(this.#buffer.store);
     this.#buffer.store.length = this.#buffer.length = 0;
     this.#lock = new Promise(res => void this.#stream.write(buffer, res));
     return this.#lock;
