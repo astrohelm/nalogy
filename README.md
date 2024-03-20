@@ -2,7 +2,7 @@
 
 <h2 align="center">Initial release 🚀</h2>
 
-<h2 align="center">Copyright & contributors</h2>
+Read [all about transports](./modules/README.md)
 
 <p align="center">
 Copyright © 2023 <a href="https://github.com/astrohelm/nalogy/graphs/contributors">Astrohelm contributors</a>.
