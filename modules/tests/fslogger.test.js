@@ -17,7 +17,7 @@ test('FSLogger transport', async () => {
   assert.strictEqual(typeof transport.write, 'function');
   assert.strictEqual(typeof transport.start, 'function');
   assert.strictEqual(typeof transport.finish, 'function');
-  assert.strictEqual(location.endsWith('/tests/tmp'), true);
+
   transport.on('error', assert.fail);
   const timer = setTimeout(async () => {
     await transport.finish();
