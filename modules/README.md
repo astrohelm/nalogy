@@ -33,6 +33,26 @@ Transport logs to the console.
 | **pretty** | Pretty function                    | **log=>log+'\n'**  |
 | **stdout** | Output interface with method write | **process.stdout** |
 
+### Browser API
+
+Transport logs to browser console.
+
+> [!TIP]
+>
+> By default, in the browser, transport uses corresponding
+> [Log4j](https://en.wikipedia.org/wiki/Log4j) console methods (`error`, `warn`, `info`, `debug`,
+> `trace`) and uses console.error for any fatal level logs. Other levels will be translated to `log`
+> by default. You can change this behavior by passing `pipe` option.
+
+#### Options
+
+|   Option   | Description                                                             |                        Default                         |
+| :--------: | ----------------------------------------------------------------------- | :----------------------------------------------------: |
+| **locale** | Intl time formatter locale                                              |                     **undefined**                      |
+| **colors** | Css for methods                                                         |            **{ ..., info: 'color: blue' }**            |
+|  **pipe**  | Pipes logs from Logger to destination, `(log: string, logObj) => void`  |         **(log, lvl) => console[lvl](format)**         |
+| **format** | Pipes logs from Logger to destination, `(log: string, logObj) => any[]` | **({lvl,msg,time})=>[`[${time}]%c${lvl}:`,color,msg]** |
+
 ## Custom transport
 
 To create custom transport you only need to follow contract:

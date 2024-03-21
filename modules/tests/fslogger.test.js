@@ -1,7 +1,7 @@
 'use strict';
 
 const { access, constants, stat, rm, readFile } = require('node:fs').promises;
-const FSLogger = require('../fslogger');
+const FSLogger = require('..')['nalogy/filesystem'];
 const assert = require('node:assert');
 const { join } = require('node:path');
 const test = require('node:test');

@@ -2,6 +2,7 @@
 
 module.exports = Console;
 
+const INVALID_OPTIONS = 'Invalid type of options parameter, must be an object';
 const kOptions = Symbol('nalogy:console:options');
 const OPTIONS = {
   pretty: log => log + '\n',
@@ -9,6 +10,7 @@ const OPTIONS = {
 };
 
 function Console(options = {}) {
+  if (options === null || typeof options !== 'object') throw new Error(INVALID_OPTIONS);
   this[kOptions] = { ...OPTIONS, ...options };
 }
 

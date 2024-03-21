@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports = {
-  FSLogger: require('./fslogger'),
-  Console: require('./console'),
+  'nalogy/filesystem': require('./filesystem'),
+  'nalogy/console': require('./console'),
+  'nalogy/browser': require('./browser'),
 };
