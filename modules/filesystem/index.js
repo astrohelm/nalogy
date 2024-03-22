@@ -1,32 +1,28 @@
 'use strict';
 
+const { OPTIONS, STREAM_OPTIONS, DAY_IN_MS, STAB_FUNCTION, PROMISE_TO_BOOL } = require('./config');
 const { INVALID_OPTIONS, INVALID_DIRECTORY, STREAM_ERROR, ROTATION_ERROR } = require('./config');
-const { OPTIONS, STREAM_OPTIONS, DAY_IN_MS, STAB_FUNCTION } = require('./config');
-
 const { createWriteStream, promises: fsp } = require('node:fs');
 const { EventEmitter } = require('node:events');
 const { stat, mkdir, readdir, unlink } = fsp;
 const { join } = require('node:path');
 
-const PROMISE_TO_BOOL = [() => true, () => false];
-
 module.exports = class FSLogger extends EventEmitter {
   #buffer = { length: 0, store: [] };
+  #options = Object.create(OPTIONS);
+  #switchTimer = null;
+  #flushTimer = null;
   #active = false;
-  #options = null;
   #stream = null;
   #lock = null;
   #location = '';
   #file = '';
 
-  #switchTimer = null;
-  #flushTimer = null;
-
   //? Only this method can throw exceptions
   constructor(options = {}) {
     super();
     if (options === null || typeof options !== 'object') throw new Error(INVALID_OPTIONS);
-    this.#options = { ...OPTIONS, ...options };
+    Object.assign(this.#options, options);
     if (!this.#options.silence) return;
     const emit = this.emit.bind(this);
     this.emit = (event, ...args) => {

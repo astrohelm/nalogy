@@ -17,6 +17,7 @@ module.exports = {
     keep: 3,
   },
 
+  PROMISE_TO_BOOL: [() => true, () => false],
   STREAM_OPTIONS: { flags: 'a' },
   DAY_IN_MS: 1000 * 60 * 60 * 24,
   STAB_FUNCTION: () => false,

@@ -11,6 +11,8 @@
 
 Winchester logging transport, with out of the box optimizations.
 
+<div align="center">
+
 #### Options
 
 |      Option       | Description                                          |  Default   |
@@ -22,16 +24,22 @@ Winchester logging transport, with out of the box optimizations.
 |    **silence**    | Runtime errors wouldn't be emitted by this transport | **false**  |
 |    **locale**     | Filename Intl date locale                            |   **af**   |
 
+</div>
+
 ### Console API
 
 Transport logs to the console.
 
+<div align="center">
+
 #### Options
 
-|   Option   | Description                        |      Default       |
-| :--------: | ---------------------------------- | :----------------: |
-| **pretty** | Pretty function                    | **log=>log+'\n'**  |
-| **stdout** | Output interface with method write | **process.stdout** |
+|   Option   | Description                        |         Default         |
+| :--------: | ---------------------------------- | :---------------------: |
+| **pretty** | Pretty function                    | **(log,obj)=>log+'\n'** |
+| **stdout** | Output interface with method write |   **process.stdout**    |
+
+</div>
 
 ### Browser API
 
@@ -41,17 +49,16 @@ Transport logs to browser console.
 >
 > By default, in the browser, transport uses corresponding
 > [Log4j](https://en.wikipedia.org/wiki/Log4j) console methods (`error`, `warn`, `info`, `debug`,
-> `trace`) and uses console.error for any fatal level logs. Other levels will be translated to `log`
-> by default. You can change this behavior by passing `pipe` option.
+> `trace`) and uses console.error for any fatal level logs. Other levels will be passed to `log`
+> method.
+
+<div align="center">
 
 #### Options
 
-|   Option   | Description                                                             |                        Default                         |
-| :--------: | ----------------------------------------------------------------------- | :----------------------------------------------------: |
-| **locale** | Intl time formatter locale                                              |                     **undefined**                      |
-| **colors** | Css for methods                                                         |            **{ ..., info: 'color: blue' }**            |
-|  **pipe**  | Pipes logs from Logger to destination, `(log: string, logObj) => void`  |         **(log, lvl) => console[lvl](format)**         |
-| **format** | Pipes logs from Logger to destination, `(log: string, logObj) => any[]` | **({lvl,msg,time})=>[`[${time}]%c${lvl}:`,color,msg]** |
+No options yet available
+
+</div>
 
 ## Custom transport
 
@@ -66,6 +73,8 @@ interface CustomTransport {
 }
 ```
 
+<div align="center">
+
 ### Methods
 
 | Method     | Description                                                                                                                                                                                                           |
@@ -74,6 +83,8 @@ interface CustomTransport {
 | **write**  | The only method that required, Logger will pass logs through this method                                                                                                                                              |
 | **finish** | Used as destructor function for your transport, would be called by Logger if specific method is called from Logger. If you use long term functions - this is great place to clean up memory and processes.            |
 | **start**  | Used as constructor function for your transport, would be called by Logger when it will start all jobs. If you use long term function - this is great place to init those.                                            |
+
+</div>
 
 ### Example
 

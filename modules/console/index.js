@@ -11,7 +11,7 @@ const OPTIONS = {
 
 function Console(options = {}) {
   if (options === null || typeof options !== 'object') throw new Error(INVALID_OPTIONS);
-  this[kOptions] = { ...OPTIONS, ...options };
+  this[kOptions] = Object.assign(Object.create(OPTIONS), options);
 }
 
 Console.prototype.write = function (log) {
