@@ -1,11 +1,12 @@
 'use strict';
 
 const { OPTIONS, STREAM_OPTIONS, DAY_IN_MS, STAB_FUNCTION, PROMISE_TO_BOOL } = require('./config');
-const { INVALID_OPTIONS, INVALID_DIRECTORY, STREAM_ERROR, ROTATION_ERROR } = require('./config');
-const { createWriteStream, promises: fsp } = require('node:fs');
+const { INVALID_OPTIONS, INVALID_DIRECTORY, CLOSING_ERROR, STREAM_ERROR } = require('./config');
+const { createWriteStream, promises: fsp, unlinkSync, statSync } = require('node:fs');
+const { cleanup, flushSync } = require('./utils');
 const { EventEmitter } = require('node:events');
-const { stat, mkdir, readdir, unlink } = fsp;
 const { join } = require('node:path');
+const { stat, mkdir, unlink } = fsp;
 
 module.exports = class FSLogger extends EventEmitter {
   #buffer = { length: 0, store: [] };
@@ -19,21 +20,54 @@ module.exports = class FSLogger extends EventEmitter {
   #end = '\n';
   #file = '';
 
-  //? Only this method can throw exceptions
+  /**
+   * @name File system transport for nalogy logger
+   * @warning **Only constructor may throw exceptions**
+   */
   constructor(options = {}) {
     super();
     if (options === null || typeof options !== 'object') throw new Error(INVALID_OPTIONS);
     Object.assign(this.#options, options);
     if (this.#options.crlf) this.#end = 'crlf';
-    if (!this.#options.silence) return;
-    const emit = this.emit.bind(this);
-    this.emit = (event, ...args) => {
-      if (event === 'error') return this;
-      return emit(event, ...args);
-    };
+    this.#start().then(() => {
+      if (!this.#options.silence) return;
+      var emit = this.emit.bind(this);
+      this.emit = (event, ...args) => {
+        if (event === 'error') return this;
+        return emit(event, ...args);
+      };
+    });
   }
 
-  async start() {
+  write(log) {
+    this.#buffer.store.push(Buffer.from(log + this.#end));
+    this.#buffer.length += log.length;
+    this.#buffer.length > this.#options.bufferSize && this.#flush();
+  }
+
+  /* eslint-disable consistent-return */
+  finish(isAsync) {
+    if (!(this.#active && this.#stream)) return;
+    if (this.#stream.destroyed || this.#stream.closed) return;
+    this.#switchTimer = (clearTimeout(this.#switchTimer), null);
+    this.#flushTimer = (clearTimeout(this.#flushTimer), null);
+    this.#active = false;
+    if (isAsync) return this.#close();
+    //? In case if process burned out
+    try {
+      this.#stream.close();
+      flushSync(this.#location, this.#buffer);
+      const stats = statSync(this.#location);
+      if (stats.size === 0) unlinkSync(this.#location);
+    } catch (e) {
+      process.stdout.write(CLOSING_ERROR + e);
+    }
+  }
+
+  /**
+   * @description Transport advanced initialization
+   */
+  async #start() {
     if (this.#active) return this;
     const path = this.#options.path;
     var isExist = await stat(path)
@@ -41,33 +75,18 @@ module.exports = class FSLogger extends EventEmitter {
       .catch(STAB_FUNCTION);
 
     if (!isExist) isExist = await mkdir(path).then(...PROMISE_TO_BOOL);
-    if (!isExist) throw new Error(INVALID_DIRECTORY + path);
+    if (!isExist) return this.emit('error', INVALID_DIRECTORY + path), this;
     await this.#open();
     return this;
   }
 
-  async finish() {
-    if (!(this.#active && this.#stream)) return;
-    if (this.#stream.destroyed || this.#stream.closed) return;
-    await this.#flush();
-    this.#active = false;
-    this.#switchTimer = (clearTimeout(this.#switchTimer), null);
-    this.#flushTimer = (clearTimeout(this.#flushTimer), null);
-    await stat(this.#location)
-      .then(({ size }) => !size && unlink(this.#location).catch(STAB_FUNCTION))
-      .catch(STAB_FUNCTION);
-  }
-
-  write(log) {
-    this.#buffer.store.push(Buffer.from(log + this.#end));
-    this.#buffer.length += log.length;
-    this.#buffer.length > this.#options.bufferSize && this.flush();
-  }
-
+  /**
+   * @description Opens file stream for writing, also schedules flush and switch processes.
+   */
   async #open() {
     this.#file = new Date().toLocaleDateString(this.#options.locale) + '.log';
     this.#location = join(this.#options.path, this.#file);
-    await this.#rotate();
+    await cleanup(this, this.#options);
 
     const error = await new Promise(resolve => {
       const signal = () => resolve(STREAM_ERROR + this.#file);
@@ -85,33 +104,30 @@ module.exports = class FSLogger extends EventEmitter {
 
     this.#active = true;
     this.#flushTimer = setInterval(() => this.#flush(), this.#options.writeInterval);
-    this.#switchTimer = setTimeout(() => this.finish().then(() => this.#open()), tm);
+    this.#switchTimer = setTimeout(() => this.finish(true).then(() => this.#open()), tm);
   }
 
+  /**
+   * @name File switch - closing step
+   * @description Will close the stream to current file & remove it if empty.
+   */
+  async #close() {
+    await this.#flush();
+    this.#stream.close();
+    await stat(this.#location)
+      .then(({ size }) => !size && unlink(this.#location).catch(STAB_FUNCTION))
+      .catch(STAB_FUNCTION);
+  }
+
+  /**
+   * @description Async winchester flush
+   */
   async #flush() {
     if (this.#lock) await this.#lock;
-    if (!this.#buffer.length) return Promise.resolve();
+    if (!this.#buffer.length || !this.#active) return Promise.resolve();
     const buffer = Buffer.concat(this.#buffer.store);
     this.#buffer.store.length = this.#buffer.length = 0;
     this.#lock = new Promise(res => void this.#stream.write(buffer, res));
     return this.#lock;
-  }
-
-  async #rotate() {
-    if (!this.#options.keep) return;
-    const promises = [];
-    try {
-      var today = Date.now();
-      var files = await readdir(this.#options.path);
-      for (var name of files) {
-        if (!name.endsWith('.log')) continue;
-        var date = new Date(name.substring(0, name.lastIndexOf('.'))).getTime();
-        if ((today - date) / DAY_IN_MS < this.#options.keep) continue;
-        promises.push(unlink(join(this.#options.path, name)));
-      }
-      await Promise.all(promises);
-    } catch (err) {
-      this.emit('error', ROTATION_ERROR + err);
-    }
   }
 };

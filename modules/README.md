@@ -69,7 +69,7 @@ To create custom transport you only need to follow contract:
 interface CustomTransport {
   write: (log: string) => void;
   start?: () => Promise<void>;
-  finish?: () => Promise<void>;
+  finish?: (preferAsync) => void | Promise<void>;
   on?: (event: string, callback: ('event', ...args: unknown[]) => void) => CustomTransport;
 }
 ```
@@ -82,8 +82,7 @@ interface CustomTransport {
 | :--------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **on**     | You can extend your transport from EventEmitter implementation, or create custom methods after all - if Transport will be created with method `on`, Logger will listen for error messages and will pass them through; |
 | **write**  | The only method that required, Logger will pass logs through this method                                                                                                                                              |
-| **finish** | Used as destructor function for your transport, would be called by Logger if specific method is called from Logger. If you use long term functions - this is great place to clean up memory and processes.            |
-| **start**  | Used as constructor function for your transport, would be called by Logger when it will start all jobs. If you use long term function - this is great place to init those.                                            |
+| **finish** | Called by Logger when process going to exit, if you want to save any information before exit this is right place to synchronously do it.                                                                              |
 
 </div>
 

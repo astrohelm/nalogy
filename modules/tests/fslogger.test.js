@@ -15,32 +15,26 @@ test('FSLogger transport', async () => {
   const fileLocation = join(__dirname, 'tmp', new Date().toLocaleDateString('af') + '.log');
   const transport = new FSLogger({ path: location, writeInterval: 100 });
   assert.strictEqual(typeof transport.write, 'function');
-  assert.strictEqual(typeof transport.start, 'function');
   assert.strictEqual(typeof transport.finish, 'function');
 
   transport.on('error', assert.fail);
   const timer = setTimeout(async () => {
-    await transport.finish();
+    transport.finish();
     await rm(location, { recursive: true, force: true }).catch(() => {});
+    assert.fail();
   }, TIMEOUT);
-
-  await transport.start();
-  await access(location, constants.F_OK).catch(assert.fail);
-  await access(fileLocation, constants.F_OK).catch(assert.fail);
-  var stats = await stat(fileLocation);
-  assert.strictEqual(stats.size, 0);
 
   transport.write('Hello world !');
 
   await setTimer(WRITE_TIMEOUT);
-
-  stats = await stat(fileLocation);
+  await access(location, constants.F_OK).catch(assert.fail);
+  await access(fileLocation, constants.F_OK).catch(assert.fail);
+  var stats = await stat(fileLocation);
   assert.strictEqual(stats.size > 0, true);
-
   const txt = await readFile(fileLocation);
   assert.strictEqual(txt.toString(), 'Hello world !\n');
 
-  await transport.finish();
+  await transport.finish(true);
   await access(fileLocation, constants.F_OK)
     .then(assert.fail)
     .catch(() => {});
