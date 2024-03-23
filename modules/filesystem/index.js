@@ -16,6 +16,7 @@ module.exports = class FSLogger extends EventEmitter {
   #stream = null;
   #lock = null;
   #location = '';
+  #end = '\n';
   #file = '';
 
   //? Only this method can throw exceptions
@@ -23,6 +24,7 @@ module.exports = class FSLogger extends EventEmitter {
     super();
     if (options === null || typeof options !== 'object') throw new Error(INVALID_OPTIONS);
     Object.assign(this.#options, options);
+    if (this.#options.crlf) this.#end = 'crlf';
     if (!this.#options.silence) return;
     const emit = this.emit.bind(this);
     this.emit = (event, ...args) => {
@@ -57,7 +59,7 @@ module.exports = class FSLogger extends EventEmitter {
   }
 
   write(log) {
-    this.#buffer.store.push(Buffer.from(log + '\n'));
+    this.#buffer.store.push(Buffer.from(log + this.#end));
     this.#buffer.length += log.length;
     this.#buffer.length > this.#options.bufferSize && this.flush();
   }
@@ -99,7 +101,7 @@ module.exports = class FSLogger extends EventEmitter {
     if (!this.#options.keep) return;
     const promises = [];
     try {
-      var today = new Date().getTime();
+      var today = Date.now();
       var files = await readdir(this.#options.path);
       for (var name of files) {
         if (!name.endsWith('.log')) continue;

@@ -19,6 +19,6 @@ const BINDINGS = {
 function Browser() {}
 Browser.prototype.write = function (_, { lvl, time, msg = '', ...other }) {
   const { color, method } = BINDINGS[lvl] ?? DEFAULT_BIND;
-  const format = `[${timeFormat(time)}] %c${lvl.toUpperCase()}:`;
+  const format = `[${timeFormat(time ?? Date.now())}] %c${lvl.toUpperCase()}:`;
   method(format, color, msg, JSON.stringify(other, null, 2).slice(1, -1));
 };

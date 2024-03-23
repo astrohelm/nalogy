@@ -15,14 +15,15 @@ Winchester logging transport, with out of the box optimizations.
 
 #### Options
 
-|      Option       | Description                                          |  Default   |
-| :---------------: | ---------------------------------------------------- | :--------: |
-| **writeInterval** | How often you logs would be flushed to winchester    |   **3s**   |
-|  **bufferSize**   | Maximum size of flush size                           |  **64kb**  |
-|     **path**      | Path to log directory                                | **./logs** |
-|     **keep**      | Log file time span, 0 means infinite                 |   **3**    |
-|    **silence**    | Runtime errors wouldn't be emitted by this transport | **false**  |
-|    **locale**     | Filename Intl date locale                            |   **af**   |
+|      Option       | Description                                                           |  Default   |
+| :---------------: | --------------------------------------------------------------------- | :--------: |
+| **writeInterval** | How often you logs would be flushed to winchester                     |   **3s**   |
+|  **bufferSize**   | Maximum size of flush size                                            |  **64kb**  |
+|     **path**      | Path to log directory                                                 | **./logs** |
+|     **keep**      | Log file time span, 0 means infinite                                  |   **3**    |
+|     **crlf**      | Defines each line ending symbol, if false - `\n` or, otherwise `\r\n` | **false**  |
+|    **silence**    | Runtime errors wouldn't be emitted by this transport                  | **false**  |
+|    **locale**     | Filename Intl date locale                                             |   **af**   |
 
 </div>
 

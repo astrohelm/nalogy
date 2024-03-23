@@ -14,6 +14,7 @@ module.exports = {
     writeInterval: 3_000,
     silence: false,
     locale: 'af',
+    crlf: false,
     keep: 3,
   },
 
