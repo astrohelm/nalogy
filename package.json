@@ -1,10 +1,10 @@
 {
   "license": "MIT",
-  "version": "1.4.0",
+  "version": "0.1.0",
   "type": "commonjs",
-  "name": "astrohelm-workspace",
+  "name": "nalogy",
   "homepage": "https://astrohelm.ru",
-  "description": "Astrohelm workspace example",
+  "description": "Logger redemption",
   "author": "Alexander Ivanov <sashapop101@gmail.com>",
   "keywords": [
     "nodejs",
@@ -12,13 +12,15 @@
     "prettier",
     "eslint",
     "ts",
-    "workspace",
-    "example",
-    "preset",
-    "starter-kit",
     "astrohelm",
     "javascript",
-    "typescript"
+    "typescript",
+    "nalogy",
+    "logger",
+    "console",
+    "logs",
+    "tools",
+    "logging"
   ],
 
   "main": "index.js",
@@ -30,15 +32,15 @@
   "files": ["/dist", "/lib", "/types"],
 
   "scripts": {
-    "test": "node --test && tsc",
+    "test": "node --test",
     "dev": "node index.js",
     "prettier:fix": "prettier --write \"**/*.{js,ts,json,html,cjs,md,yaml}\"",
     "eslint:fix": "eslint --fix \"**/*.{js,ts}\""
   },
 
-  "repository": { "type": "git", "url": "git+https://github.com/astrohelm/node-workspace.git" },
+  "repository": { "type": "git", "url": "git+https://github.com/astrohelm/nalogy.git" },
   "bugs": {
-    "url": "https://github.com/astrohelm/node-workspace/issues",
+    "url": "https://github.com/astrohelm/nalogy/issues",
     "email": "sashapop101@gmail.com"
   },
 
